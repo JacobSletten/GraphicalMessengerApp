@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<SplitPane dividerPositions="0.8691275167785234" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="300.0" prefWidth="320.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.graphicalmessengerapp.ClientUIController">
+  <items>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="342.0" prefWidth="535.0">
+         <children>
+            <ScrollPane fx:id="sp_main" prefHeight="255.0" prefWidth="317.0">
+               <content>
+                  <VBox fx:id="vbox_messages" prefHeight="251.0" prefWidth="313.0" />
+               </content>
+            </ScrollPane>
+         </children></AnchorPane>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+         <children>
+            <Button fx:id="send_button" layoutX="273.0" layoutY="5.0" mnemonicParsing="false" onAction="#sendButtonPressed" prefHeight="25.0" prefWidth="43.0" text="Send" />
+            <TextField fx:id="message_field" layoutX="8.0" layoutY="5.0" prefHeight="25.0" prefWidth="257.0" />
+         </children></AnchorPane>
+  </items>
+</SplitPane>
