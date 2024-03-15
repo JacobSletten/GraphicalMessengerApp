@@ -12,15 +12,13 @@ public class ServerTransceiver implements Runnable {
     private BufferedWriter bufferedWriter;
     private String clientUsername;
 
+    public static DataAccessObject dao = new DataAccessObject();
+
     public ServerTransceiver(Socket socket) {
         try  {
             this.socket = socket;
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            this.clientUsername = bufferedReader.readLine();
-            connections.add(this);
-            System.out.println("Received Username::" + clientUsername);
-            broadcastMessage("Server: " + clientUsername + " had entered the chat!");
         } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
@@ -64,15 +62,68 @@ public class ServerTransceiver implements Runnable {
             e.printStackTrace();
         }
     }
+    
+    public boolean authenticate(String user, String pass) {
+        return (dao.validateUser(user,pass));
+    }
+
+    private void manageLogin() {
+        try {
+            String user = bufferedReader.readLine();
+            String pass = bufferedReader.readLine();
+            System.out.println("User:" + user);
+            if (authenticate(user, pass)) {
+                clientUsername = user;
+                bufferedWriter.write("LOG:good");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+                connections.add(this);
+                broadcastMessage("SERVER: " + clientUsername + " had entered the chat!");
+            } else {
+                bufferedWriter.write("LOG:bad");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void manageAccountCreation() {
+        try {
+            String user = bufferedReader.readLine();
+            String pass = bufferedReader.readLine();
+            if (dao.createUser(user,pass)) {
+                clientUsername = user;
+                bufferedWriter.write("LOG:good");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+                connections.add(this);
+                broadcastMessage("SERVER: " + clientUsername + " had entered the chat!");
+            } else {
+                bufferedWriter.write("LOG:bad");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void run() {
         String messageFromClient;
         while(socket.isConnected()) {
             try { //BLOCKING OPERATION
-                messageFromClient = bufferedReader.readLine();
-                System.out.println("Received Message::");
-                broadcastMessage(messageFromClient);
+                messageFromClient= bufferedReader.readLine();
+                System.out.println("Received: " + messageFromClient);
+                if (messageFromClient.equals("Login")) {
+                    manageLogin();
+                } else if (messageFromClient.equals("Create") ) {
+                    manageAccountCreation();
+                } else {
+                    broadcastMessage(messageFromClient);
+                }
             } catch (IOException e) {
                 closeEverything(socket, bufferedReader, bufferedWriter);
                 break;

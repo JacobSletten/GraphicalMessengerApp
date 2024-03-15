@@ -53,8 +53,7 @@ public class ClientUIController implements Initializable {
     public void passClientTransceiver(ClientTransceiver transceiver) {
         System.out.println("Passing Transceiver");
         this.clientTransceiver = transceiver;
-        clientTransceiver.recieveMessageWithHook(getData);
-
+        clientTransceiver.receiveMessageWithHook(getData);
     }
 
     @FXML
@@ -83,5 +82,6 @@ public class ClientUIController implements Initializable {
                 });
             }
         });
+
     }
 }

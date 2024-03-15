@@ -11,7 +11,8 @@ import java.io.IOException;
 public class ClientUI extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("client-login.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("client-login.fxml"));
+        Parent root = loader.load();
         Scene scene = new Scene(root);
         stage.setTitle("Login Page");
         stage.setScene(scene);

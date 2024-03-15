@@ -11,6 +11,7 @@ public class ClientTransceiver {
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     public String clientUsername;
+    public Boolean status = false;
 
     public ClientTransceiver(Socket socket) {
         try {
@@ -23,11 +24,15 @@ public class ClientTransceiver {
         }
     }
 
+    public boolean getStatus() {
+        return status;
+    }
+
     public void setClientUsername(String username) {
         clientUsername = username;
     }
 
-    private void shutdownClient(){
+    public void shutdownClient(){
         try {
             if (clientSocket != null) {
                 clientSocket.close();
@@ -51,6 +56,41 @@ public class ClientTransceiver {
         } catch (IOException e) {
             shutdownClient();
         }
+    }
+
+    public void sendCredentials(String user, String pass) throws IOException {
+        clientUsername = user;
+        bufferedWriter.write("Login");
+        bufferedWriter.newLine();
+        bufferedWriter.write(user);
+        bufferedWriter.newLine();
+        bufferedWriter.write(pass);
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
+    }
+
+    public void sendNewAccount(String user, String pass) throws IOException {
+        clientUsername = user;
+        bufferedWriter.write("Create");
+        bufferedWriter.newLine();
+        bufferedWriter.write(user);
+        bufferedWriter.newLine();
+        bufferedWriter.write(pass);
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
+    }
+
+    public boolean waitForResponse() {
+        boolean flag = false;
+        try {
+            System.out.println("Waiting for response...");
+            String msgFromSvr = bufferedReader.readLine();
+            System.out.println("Response from Server: " + msgFromSvr);
+            if (msgFromSvr.equals("LOG:good")) { flag = true; }
+        } catch (IOException e) {
+            shutdownClient();
+        }
+        return flag;
     }
 
     public void sendUsername() {
@@ -83,28 +123,22 @@ public class ClientTransceiver {
 
     }
 
-    public void recieveMessageWithHook(ExtractionFunction func) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String msgFromSvr;
-                while (clientSocket.isConnected()) {
-                    try {
-                        msgFromSvr = bufferedReader.readLine();
-                        func.getData(msgFromSvr);
-                    } catch (IOException e) {
-                        shutdownClient();
-                    }
+    public void receiveMessageWithHook(ExtractionFunction func) {
+        new Thread(() -> {
+            String msgFromSvr;
+            while (clientSocket.isConnected()) {
+                try {
+                    msgFromSvr = bufferedReader.readLine();
+                    func.getData(msgFromSvr);
+                } catch (IOException e) {
+                    shutdownClient();
                 }
             }
         }).start();
     }
 
-
     public void receiveMessage() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+        new Thread(() -> {
                 String msgFromSvr;
                 while (clientSocket.isConnected()) {
                     try {
@@ -114,7 +148,6 @@ public class ClientTransceiver {
                         shutdownClient();
                     }
                 }
-            }
         }).start();
     }
 }
