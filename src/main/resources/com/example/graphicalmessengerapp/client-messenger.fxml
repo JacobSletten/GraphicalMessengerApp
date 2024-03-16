@@ -13,14 +13,14 @@
          <children>
             <ScrollPane fx:id="sp_main" prefHeight="255.0" prefWidth="317.0">
                <content>
-                  <VBox fx:id="vbox_messages" prefHeight="251.0" prefWidth="313.0" />
+                  <VBox fx:id="vbox_messages" maxWidth="305.0" prefHeight="251.0" prefWidth="300.0" />
                </content>
             </ScrollPane>
          </children></AnchorPane>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
          <children>
             <Button fx:id="send_button" layoutX="273.0" layoutY="5.0" mnemonicParsing="false" onAction="#sendButtonPressed" prefHeight="25.0" prefWidth="43.0" text="Send" />
-            <TextField fx:id="message_field" layoutX="8.0" layoutY="5.0" prefHeight="25.0" prefWidth="257.0" />
+            <TextField fx:id="message_field" layoutX="8.0" layoutY="5.0" onKeyPressed="#enterKeyPressed" prefHeight="25.0" prefWidth="257.0" promptText="Enter your message" />
          </children></AnchorPane>
   </items>
 </SplitPane>

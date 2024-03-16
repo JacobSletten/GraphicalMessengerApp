@@ -5,9 +5,13 @@ import com.example.graphicalmessengerapp.clientcomponents.ClientTransceiver;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -17,6 +21,8 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -62,6 +68,14 @@ public class ClientUIController implements Initializable {
         clientTransceiver.sendMessage(message);
         message_field.clear();
     }
+    @FXML
+    public void enterKeyPressed(KeyEvent event) {
+        if (event.getCode().equals(KeyCode.ENTER)) {
+            String message = message_field.getText();
+            clientTransceiver.sendMessage(message);
+            message_field.clear();
+        }
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -78,6 +92,13 @@ public class ClientUIController implements Initializable {
                         hbox.setPadding(new Insets(2,2,2,2));
                         hbox.getChildren().add(textFlow);
                         vbox_messages.getChildren().add(hbox);
+
+                        vbox_messages.heightProperty().addListener(new ChangeListener<Number>() {
+                            @Override
+                            public void changed(ObservableValue<? extends Number> observableValue, Number oldValue, Number newValue) {
+                                sp_main.setVvalue((Double) newValue);
+                            }
+                        });
                     }
                 });
             }

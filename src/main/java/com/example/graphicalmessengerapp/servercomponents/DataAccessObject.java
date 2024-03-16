@@ -1,6 +1,4 @@
 package com.example.graphicalmessengerapp.servercomponents;
-
-import java.io.IOException;
 import java.sql.*;
 
 public class DataAccessObject {
