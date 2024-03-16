@@ -5,11 +5,9 @@ import java.sql.*;
 
 public class DataAccessObject {
     Connection connection;
-    Statement statement;
+    PreparedStatement psGetAllUsers;
     PreparedStatement psGetUser;
-    PreparedStatement psCheckUserExists;
     PreparedStatement psInsert;
-
 
     public DataAccessObject() {
         try {
@@ -17,7 +15,9 @@ public class DataAccessObject {
                     "jdbc:mysql://localhost:3306/messengerdatabase",
                     "root", "toor");
 
-            statement = connection.createStatement();
+            psGetAllUsers = connection.prepareStatement("SELECT * FROM users");
+            psGetUser = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
+            psInsert = connection.prepareStatement("INSERT INTO users (username, password) VALUES (?,?)");
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -26,7 +26,7 @@ public class DataAccessObject {
 
     public void getUsers() {
         try {
-            ResultSet results = statement.executeQuery("select * from users");
+            ResultSet results = psGetAllUsers.executeQuery();
             while (results.next()) {
                 System.out.println(results.getString("username"));
             }
@@ -35,53 +35,57 @@ public class DataAccessObject {
         }
     }
 
-    public boolean createUser(String user, String pass) {
+    public String createUser(String user, String pass) {
         ResultSet results;
         try {
-            psCheckUserExists = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
-            psCheckUserExists.setString(1, user);
-            results = psCheckUserExists.executeQuery();
+            psGetUser.setString(1, user);
+            results = psGetUser.executeQuery();
 
             if (results.isBeforeFirst()) { //User already exists
                 System.out.println("User already exists");
-                return false;
-            } else { //Create new user
-                if (!validatePassword(pass)) {
-                    System.out.println("Invalid Password");
-                    return false;
-                }
-                psInsert = connection.prepareStatement("INSERT INTO users (username, password) VALUES (?,?)");
-                psInsert.setString(1,user);
-                psInsert.setString(2,pass);
-                psInsert.executeUpdate();
-                System.out.println("User Inserted");
-                return true;
+                return "User Already Exists";
             }
+            if (!validatePassword(pass)) { // Password is invalid
+                System.out.println("Invalid Password");
+                return "Invalid Password";
+            }
+
+            psInsert.setString(1,user);
+            psInsert.setString(2,pass);
+            psInsert.executeUpdate();
+            System.out.println("User Inserted");
+            return "Valid";
+
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return "Invalid";
         }
     }
 
-    public boolean validateUser(String user,String pass) {
+    public String validateUser(String user,String pass) {
         ResultSet results;
         String password;
         try {
-            psGetUser = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
             psGetUser.setString(1,user);
             results = psGetUser.executeQuery();
-            if(results.isBeforeFirst()) { //The username exists
-                results.next();
-                password = results.getString("password");
-                if (!password.equals(pass)) { return false; }
-                return true;
-            } else { //Username does not exist
+
+            if(!results.isBeforeFirst()) { // Username doesnt exist
                 System.out.println("This username (" + user + ") does not exist");
-                return false;
+                return "Invalid Username";
             }
+
+            results.next(); // Get Password
+            password = results.getString("password");
+
+            if (!password.equals(pass)) { //Incorrect Password
+                System.out.println("Incorrect Password");
+                return "Incorrect Password";
+            }
+
+            return "Valid";
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return "Invalid";
         }
     }
 

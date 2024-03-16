@@ -6,17 +6,25 @@ import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
+/**
+ * ClientTransceiver handles all Client Side Networking Elements
+ */
 public class ClientTransceiver {
     private Socket clientSocket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
-    public String clientUsername;
-    public Boolean status = false;
+    private String clientUsername;
+    private Boolean status = false;
 
+    /**
+     * Initializes the client socket and
+     * establishes input and output buffers.
+     *
+     * @param socket the client's socket
+     */
     public ClientTransceiver(Socket socket) {
         try {
             this.clientSocket = socket;
-            //this.clientUsername = username;
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         } catch (IOException e) {
@@ -27,7 +35,9 @@ public class ClientTransceiver {
     public boolean getStatus() {
         return status;
     }
-
+    public String getClientUsername() {
+        return clientUsername;
+    }
     public void setClientUsername(String username) {
         clientUsername = username;
     }
@@ -58,50 +68,24 @@ public class ClientTransceiver {
         }
     }
 
-    public void sendCredentials(String user, String pass) throws IOException {
-        clientUsername = user;
-        bufferedWriter.write("Login");
-        bufferedWriter.newLine();
-        bufferedWriter.write(user);
-        bufferedWriter.newLine();
-        bufferedWriter.write(pass);
-        bufferedWriter.newLine();
-        bufferedWriter.flush();
+    public void sendLoginCredentials(String user, String pass) throws IOException {
+        sendCredentials(user, pass, "Login");
     }
 
-    public void sendNewAccount(String user, String pass) throws IOException {
-        clientUsername = user;
-        bufferedWriter.write("Create");
-        bufferedWriter.newLine();
-        bufferedWriter.write(user);
-        bufferedWriter.newLine();
-        bufferedWriter.write(pass);
-        bufferedWriter.newLine();
-        bufferedWriter.flush();
+    public void sendNewAccountCredentials(String user, String pass) throws IOException {
+        sendCredentials(user, pass, "Create");
     }
 
-    public boolean waitForResponse() {
-        boolean flag = false;
+    public String waitForResponse() {
+        String msgFromSvr = "Invalid";
         try {
             System.out.println("Waiting for response...");
-            String msgFromSvr = bufferedReader.readLine();
+            msgFromSvr = bufferedReader.readLine();
             System.out.println("Response from Server: " + msgFromSvr);
-            if (msgFromSvr.equals("LOG:good")) { flag = true; }
         } catch (IOException e) {
             shutdownClient();
         }
-        return flag;
-    }
-
-    public void sendUsername() {
-        try {
-            System.out.println("Sending client username:" + clientUsername);
-            bufferedWriter.write(clientUsername);
-            bufferedWriter.newLine();
-            bufferedWriter.flush();
-        } catch (IOException e) {
-            shutdownClient();
-        }
+        return msgFromSvr;
     }
 
     public void sendMessageContinuous(){
@@ -149,5 +133,16 @@ public class ClientTransceiver {
                     }
                 }
         }).start();
+    }
+
+    private void sendCredentials(String user, String pass, String header) throws IOException {
+        clientUsername = user;
+        bufferedWriter.write(header);
+        bufferedWriter.newLine();
+        bufferedWriter.write(user);
+        bufferedWriter.newLine();
+        bufferedWriter.write(pass);
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
     }
 }

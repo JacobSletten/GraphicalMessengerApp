@@ -62,27 +62,17 @@ public class ServerTransceiver implements Runnable {
             e.printStackTrace();
         }
     }
-    
-    public boolean authenticate(String user, String pass) {
-        return (dao.validateUser(user,pass));
-    }
 
     private void manageLogin() {
         try {
             String user = bufferedReader.readLine();
             String pass = bufferedReader.readLine();
             System.out.println("User:" + user);
-            if (authenticate(user, pass)) {
-                clientUsername = user;
-                bufferedWriter.write("LOG:good");
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
-                connections.add(this);
-                broadcastMessage("SERVER: " + clientUsername + " had entered the chat!");
+            String validation = dao.validateUser(user, pass);
+            if (validation.equals("Valid")) {
+                acknowledgeCredentials(user);
             } else {
-                bufferedWriter.write("LOG:bad");
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
+                sendErrorMessage(validation);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -93,21 +83,30 @@ public class ServerTransceiver implements Runnable {
         try {
             String user = bufferedReader.readLine();
             String pass = bufferedReader.readLine();
-            if (dao.createUser(user,pass)) {
-                clientUsername = user;
-                bufferedWriter.write("LOG:good");
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
-                connections.add(this);
-                broadcastMessage("SERVER: " + clientUsername + " had entered the chat!");
+            String validation = dao.createUser(user,pass);
+            if (validation.equals("Valid")) {
+                acknowledgeCredentials(user);
             } else {
-                bufferedWriter.write("LOG:bad");
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
+                sendErrorMessage(validation);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void acknowledgeCredentials(String user) throws IOException {
+        clientUsername = user;
+        bufferedWriter.write("Valid Login");
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
+        connections.add(this);
+        broadcastMessage("SERVER: " + clientUsername + " had entered the chat!");
+    }
+
+    public void sendErrorMessage(String message) throws IOException {
+        bufferedWriter.write(message);
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
     }
 
     @Override

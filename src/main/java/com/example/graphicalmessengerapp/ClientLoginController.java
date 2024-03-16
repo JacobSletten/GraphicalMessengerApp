@@ -8,10 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -34,19 +31,6 @@ public class ClientLoginController implements Initializable {
     @FXML
     private PasswordField password_field;
 
-    /*
-    public ClientLoginController() throws IOException {
-        System.out.println("Building Controller");
-        Socket socket = new Socket("localhost", 1234);
-        //client = new Client(socket);
-        clientTransceiver = new ClientTransceiver(socket);
-        stage = (Stage)loginAnchor.getScene().getWindow();
-
-        stage.setOnCloseRequest(event -> {
-            clientTransceiver.shutdownClient();
-        });
-
-    }*/
     public void setStage(Stage stage) {
         this.stage = stage;
     }
@@ -71,12 +55,12 @@ public class ClientLoginController implements Initializable {
     public void loginButtonPressed(ActionEvent event) throws IOException {
         String username = username_field.getText();
         String password = password_field.getText();
-        boolean status = false;
+        String status;
 
-        clientTransceiver.sendCredentials(username, password);
+        clientTransceiver.sendLoginCredentials(username, password);
         System.out.println("Credentials sent!");
         status = clientTransceiver.waitForResponse();
-        if (status) {
+        if (status.equals("Valid Login")) {
             System.out.println("Status is true");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("client-messenger.fxml"));
             root = loader.load();
@@ -90,7 +74,7 @@ public class ClientLoginController implements Initializable {
             stage.setTitle("Messenger (" + username + ")");
             stage.show();
         } else {
-            System.out.println("status is not true");
+            displayInvalidAlert(status);
         }
     }
 
@@ -98,12 +82,12 @@ public class ClientLoginController implements Initializable {
     public void createAccountButtonPressed(ActionEvent event) throws IOException {
         String username = username_field.getText();
         String password = password_field.getText();
-        boolean status = false;
+        String status;
 
-        clientTransceiver.sendNewAccount(username, password);
+        clientTransceiver.sendNewAccountCredentials(username, password);
         System.out.println("Credentials sent!");
         status = clientTransceiver.waitForResponse();
-        if (status) {
+        if (status.equals("Valid Login")) {
             System.out.println("Status is true");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("client-messenger.fxml"));
             root = loader.load();
@@ -117,8 +101,16 @@ public class ClientLoginController implements Initializable {
             stage.setTitle("Messenger (" + username + ")");
             stage.show();
         } else {
-            System.out.println("status is not true");
+            displayInvalidAlert(status);
         }
+    }
+
+    private void displayInvalidAlert(String status) {
+        System.out.println("Status is Invalid");
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(status);
+        alert.show();
+        password_field.clear();
     }
 
     @Override
